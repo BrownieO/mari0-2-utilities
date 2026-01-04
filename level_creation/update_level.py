@@ -3,7 +3,7 @@ import csv
 import json
 from pprint import pformat
 
-entity_list = [None, None, "mushroom", "one_up", "starman", None, "goomba", "koopa", "spawn", "goomba", "koopa", "goal_block", "red_koopa", "red_koopa"]
+entity_list = [None, None, "mushroom", "one_up", "starman", None, "goomba", "koopa", "spawn", "goomba", "koopa", "goal_block", "koopa_red", "koopa_red"]
 
 background_list = [
     None,
@@ -117,4 +117,5 @@ new_level = generate_new_level(level)
 if args.output:
     save_output(new_level, args.output)
 else:
+
     print(new_level)
