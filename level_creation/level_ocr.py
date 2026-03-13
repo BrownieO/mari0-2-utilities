@@ -31,11 +31,11 @@ def split_image_into_tiles(image_path):
     img = Image.open(image_path)
     img_width, img_height = img.size
 
-    cols = img_width // 16
-    rows = img_height // 16
-    
     tile_width = 16
     tile_height = 16
+    
+    cols = img_width // tile_width
+    rows = img_height // tile_height
 
     tiles = []
     unique = []
@@ -126,4 +126,5 @@ if create_level:
     output_path = Path(image_file).parent / (Path(image_file).stem + ".csv")
     
     np.savetxt(output_path, level_formatted, fmt="%d", delimiter=",")
+
     print(f"Level array saved to {output_path}")
