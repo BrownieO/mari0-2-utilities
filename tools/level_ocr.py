@@ -90,7 +90,6 @@ def create_palette(unique_ids, unique_tiles):
     return create_image_chain(image_chain)
 
 
-
 img = Image.open(args.file)
 img_width, img_height = img.size
 
@@ -99,7 +98,6 @@ tile_height = 16
 
 cols = img_width // tile_width
 rows = img_height // tile_height
-
 
 
 level, unique_tiles = split_image_into_tiles(img)
@@ -113,8 +111,8 @@ if args.palette:
     im = create_palette(unique_ids, unique_tiles)
 
     output_palette_path = Path(args.file).parent / (Path(args.file).stem + "_palette.png")
-
     im.save(output_palette_path)
+
     print(f"Palette saved to {output_palette_path}")
 
 if args.level:
@@ -125,7 +123,6 @@ if args.level:
     level_formatted = np.fliplr(level_formatted)
 
     output_path = Path(args.file).parent / (Path(args.file).stem + ".csv")
-
     np.savetxt(output_path, level_formatted, fmt="%d", delimiter=",")
-
+    
     print(f"Level array saved to {output_path}")
