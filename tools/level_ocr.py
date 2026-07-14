@@ -51,6 +51,7 @@ def split_image_into_tiles(image_path):
 
             still_unique = True
             
+            # If there's a tile image equal to the current one, append its index to the "tiles" array.
             for item in unique:
                 diff = ImageChops.difference(item, tile)
                 if not diff.getbbox():
@@ -58,6 +59,7 @@ def split_image_into_tiles(image_path):
                     still_unique = False
                     break
             
+            # Else, save a new image and append the new index.
             if still_unique:
                 unique.append(tile)
                 tiles.append(len(unique)-1)
@@ -65,7 +67,7 @@ def split_image_into_tiles(image_path):
     return tiles, unique
 
 def create_image_chain(images):
-    widths, heights = zip(*(i.size for i in images))
+    widths, heights = zip(*(i.size for i in images)) # The asterisk unpacks each tile image
 
     total_width = sum(widths)
     max_height = max(heights)
@@ -78,6 +80,8 @@ def create_image_chain(images):
       x_offset += im.size[0]
 
     return new_im
+
+
 
 level, unique_tiles = split_image_into_tiles(image_file)
 
