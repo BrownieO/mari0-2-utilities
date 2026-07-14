@@ -10,33 +10,19 @@ from pathlib import Path
 from PIL import Image, ImageChops
 
 parser = argparse.ArgumentParser(description="Reads a level image and makes an array of tile IDs.")
-parser.add_argument("-f", "--file", help="set the input file path.")
-parser.add_argument("-l", "--level", action="store_true", help="output a full level array.")
-parser.add_argument("-p", "--palette", action="store_true", help="output an image with all the unique tiles.")
-parser.add_argument("-s", "--sort", action="store_true", help="sort the tile IDs by frequency.")
+parser.add_argument("-f", "--file", help="set the input file path")
+parser.add_argument("-l", "--level", action="store_true", help="output a full level array")
+parser.add_argument("-p", "--palette", action="store_true", help="output an image with all the unique tiles")
+parser.add_argument("-s", "--sort", action="store_true", help="sort the tile IDs by frequency")
 args = parser.parse_args()
 
-image_file = args.file
-create_level = args.level
-create_palette = args.palette
-sort_tiles = args.sort
-
-if not create_level and not create_palette and not sort_tiles:
+if not args.level and not args.palette and not args.sort:
     parser.print_help()
+    if args.file:
+        print("Please select a task.")
     quit()
 
-def split_image_into_tiles(image_path):
-    global rows
-    global cols
-    img = Image.open(image_path)
-    img_width, img_height = img.size
-
-    tile_width = 16
-    tile_height = 16
-    
-    cols = img_width // tile_width
-    rows = img_height // tile_height
-
+def split_image_into_tiles(img):
     tiles = []
     unique = []
 
@@ -50,7 +36,7 @@ def split_image_into_tiles(image_path):
             tile = img.crop((left, top, right, bottom))
 
             still_unique = True
-            
+
             # If there's a tile image equal to the current one, append its index to the "tiles" array.
             for item in unique:
                 diff = ImageChops.difference(item, tile)
@@ -58,7 +44,7 @@ def split_image_into_tiles(image_path):
                     tiles.append(unique.index(item))
                     still_unique = False
                     break
-            
+
             # Else, save a new image and append the new index.
             if still_unique:
                 unique.append(tile)
@@ -81,54 +67,65 @@ def create_image_chain(images):
 
     return new_im
 
-
-
-level, unique_tiles = split_image_into_tiles(image_file)
-
-unique_ids, freq = np.unique(level, return_counts=True)
-
-if sort_tiles:
+def sort_tiles(level, unique_ids, freq):
     sorted_indices = np.argsort(freq)[::-1]
-    sorted_unique_ids = unique_ids[sorted_indices] 
-    sorted_freq = freq[sorted_indices]
-
+    sorted_unique_ids = unique_ids[sorted_indices]
     replacements_dict = {tile_id: n for n, tile_id in enumerate(sorted_unique_ids)}
-else:
-    sorted_unique_ids = unique_ids
-
-if create_palette or sort_tiles:
-    image_chain = []
     n = 0
     for tile_id in sorted_unique_ids:
-        if create_palette:
-            image_chain.append(unique_tiles[tile_id])
-        if sort_tiles:
-            replacements_dict[tile_id] = n
-            n += 1
-
-if sort_tiles:
+        replacements_dict[tile_id] = n
+        n += 1
     m = 0
     for tile_id in level:
         level[m] = replacements_dict[tile_id]
         m += 1
+    return level, sorted_unique_ids
 
-if create_palette:
-    im = create_image_chain(image_chain)
-    
-    output_palette_path = Path(image_file).parent / (Path(image_file).stem + "_palette.png")
-    
+def create_palette(unique_ids, unique_tiles):
+    image_chain = []
+    n = 0
+    for tile_id in unique_ids:
+        image_chain.append(unique_tiles[tile_id])
+
+    return create_image_chain(image_chain)
+
+
+
+img = Image.open(args.file)
+img_width, img_height = img.size
+
+tile_width = 16
+tile_height = 16
+
+cols = img_width // tile_width
+rows = img_height // tile_height
+
+
+
+level, unique_tiles = split_image_into_tiles(img)
+
+unique_ids, freq = np.unique(level, return_counts=True)
+
+if args.sort:
+    level, unique_ids = sort_tiles(level, unique_ids, freq)
+
+if args.palette:
+    im = create_palette(unique_ids, unique_tiles)
+
+    output_palette_path = Path(args.file).parent / (Path(args.file).stem + "_palette.png")
+
     im.save(output_palette_path)
     print(f"Palette saved to {output_palette_path}")
 
-if create_level:
+if args.level:
     level = np.reshape(level, (rows, cols))
-    
+
     level_formatted = level
     level_formatted = np.rot90(level_formatted, 3)
     level_formatted = np.fliplr(level_formatted)
-    
-    output_path = Path(image_file).parent / (Path(image_file).stem + ".csv")
-    
+
+    output_path = Path(args.file).parent / (Path(args.file).stem + ".csv")
+
     np.savetxt(output_path, level_formatted, fmt="%d", delimiter=",")
 
     print(f"Level array saved to {output_path}")
