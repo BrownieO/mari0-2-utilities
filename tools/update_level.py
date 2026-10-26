@@ -45,20 +45,24 @@ def parse_args():
     )
     return parser.parse_args()
 
-def load_level(file_path: str):
+def load_level(file_path: str) -> str:
     with open(file_path, "r", newline="") as f:
         return f.read()
 
 
-def save_output(content: str, output_file: str):
+def save_output(content: str, output_file: str) -> None:
     with open(output_file, "w", encoding="utf-8") as f:
         f.write(content)
 
-def parse_level(raw: str):
+def parse_level(raw: str) -> list[list[str]]:
     rows = raw.strip().split(";")
     return [row.split(",") for row in rows if row]
 
-def separate_into_columns(flat_list: list[str], height: int):
+def separate_into_columns(
+    flat_list: list[str],
+    height: int
+    ) -> list[list[str]]:
+    
     width = len(flat_list) // height
     columns: list[list[str]] = []
 
@@ -68,7 +72,9 @@ def separate_into_columns(flat_list: list[str], height: int):
 
     return columns
 
-def parse_columns(columns: list[list[str]]):
+def parse_columns(
+    columns: list[list[str]]
+    ) -> tuple[list[list[int]], list[list[dict[str, Any]]]]:
     tiles: list[list[int]] = []
     entities: list[list[dict[str, Any]]] = []
 
@@ -94,7 +100,7 @@ def parse_columns(columns: list[list[str]]):
         
     return tiles, entities
 
-def convert_to_lua(python_repr: str):
+def convert_to_lua(python_repr: str) -> str:
     replacements = {
         "{'": "",
         "{": "",
@@ -112,7 +118,7 @@ def convert_to_lua(python_repr: str):
 
     return "return {\n" + python_repr + "\n}"
 
-def generate_new_level(parsed: list[list[str]]):
+def generate_new_level(parsed: list[list[str]]) -> str:
     height = int(parsed[1][0].split("=")[1])
 
     columns = separate_into_columns(parsed[0], height)
