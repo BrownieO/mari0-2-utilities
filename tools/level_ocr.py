@@ -25,30 +25,28 @@ if not args.level and not args.palette and not args.sort:
 def split_image_into_tiles(img):
     tiles = []
     unique = []
+    lookup = {}
 
     for r in range(rows):
         for c in range(cols):
             left = c * tile_width
             top = r * tile_height
-            right = (c + 1) * tile_width
-            bottom = (r + 1) * tile_height
+            tile = img.crop((
+                left, top,
+                left + tile_width,
+                top + tile_height
+            ))
 
-            tile = img.crop((left, top, right, bottom))
+            key = tile.tobytes()
 
-            still_unique = True
+            idx = lookup.get(key)
 
-            # If there's a tile image equal to the current one, append its index to the "tiles" array.
-            for item in unique:
-                diff = ImageChops.difference(item, tile)
-                if not diff.getbbox():
-                    tiles.append(unique.index(item))
-                    still_unique = False
-                    break
-
-            # Else, save a new image and append the new index.
-            if still_unique:
+            if idx is None:
+                idx = len(unique)
+                lookup[key] = idx
                 unique.append(tile)
-                tiles.append(len(unique)-1)
+
+            tiles.append(idx)
 
     return tiles, unique
 
