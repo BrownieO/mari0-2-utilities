@@ -1,6 +1,7 @@
 """
 Super Mario Maker for Nintendo 3DS Save Editor
 Created by RealSweeper3
+Port to Python by BrownieO
 https://github.com/RealSweeper3/SMM3DSSE/tree/master
 """
 import os
